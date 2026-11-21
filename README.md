@@ -2,7 +2,7 @@
 
 Personal portfolio of **Therenz Jaromohom**, a Brand Identity & UI/UX Designer.
 
-**Live site:** https://rinsooouw.netlify.app/
+**Live site:** https://renzuo.netlify.app/
 
 ---
 
@@ -79,7 +79,7 @@ The counter uses a Netlify Function at `netlify/functions/visits.mjs`, available
 ## Contact
 
 - **Email:** jaromohomrenze231@gmail.com
-- **Portfolio:** https://rinsooouw.netlify.app/
+- **Portfolio:** https://renzuo.netlify.app/
 
 ---
 
