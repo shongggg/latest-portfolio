@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Times New Roman", Georgia, serif;
+  --color-page: #141312;
+  --color-footer: #0c0c0b;
+  --color-accent: #e8542c;
+  --color-dim: #3b3a38;
+}
+
+html {
+  background: var(--color-footer);
+}
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-footer);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Lenis recommended styles */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Profile card tag marquee */
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 24s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Typewriter caret */
+@keyframes caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret {
+  animation: caret 1s steps(1) infinite;
+}
+
+/* Orange light running along the spiral lines */
+@keyframes orbit {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+.orbit {
+  animation: orbit 18s linear infinite;
+}
+
+html[data-reduce-motion='true'] .marquee-track,
+html[data-reduce-motion='true'] .orbit,
+html[data-reduce-motion='true'] .caret {
+  animation: none;
+}
