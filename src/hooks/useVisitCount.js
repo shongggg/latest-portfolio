@@ -1,33 +1,47 @@
 import { useEffect, useState } from 'react'
 import { visitCounter } from '../data'
 
+const COOLDOWN_MS = 24 * 60 * 60 * 1000 // same browser = 1 visit per 24 hours, across all tabs
 const LOCAL_KEY = 'portfolio:visits' // this browser's own running total (fallback)
-const LOCAL_SESSION = 'portfolio:visit-local' // "already counted in this tab session"
-const HIT_SESSION = 'portfolio:visit-hit'
+const HIT_KEY = 'portfolio:last-hit' // when this browser last counted on the server
+const LOCAL_HIT_KEY = 'portfolio:last-local-hit' // same, for the fallback counter
+const OWNER_KEY = 'portfolio:owner' // set once by opening the site with ?owner=1
 
 // Storage can be blocked (private mode etc.), so every access is wrapped.
-const read = (store, key) => {
+const read = (key) => {
   try {
-    return store.getItem(key)
+    return localStorage.getItem(key)
   } catch {
     return null
   }
 }
-const write = (store, key, value) => {
+const write = (key, value) => {
   try {
-    store.setItem(key, value)
+    localStorage.setItem(key, value)
   } catch {
     /* ignore */
   }
 }
 
+const isOwner = () => {
+  try {
+    if (new URLSearchParams(window.location.search).get('owner') === '1') write(OWNER_KEY, '1')
+  } catch {
+    /* ignore */
+  }
+  return read(OWNER_KEY) === '1'
+}
+
+const dueForCount = (key) => !isOwner() && Date.now() - (Number(read(key)) || 0) > COOLDOWN_MS
+const markCounted = (key) => write(key, String(Date.now()))
+
 // Fallback: counts visits made from THIS browser only.
 function localCount() {
-  let n = Number(read(localStorage, LOCAL_KEY)) || 0
-  if (!read(sessionStorage, LOCAL_SESSION)) {
+  let n = Number(read(LOCAL_KEY)) || 0
+  if (dueForCount(LOCAL_HIT_KEY)) {
     n += 1
-    write(localStorage, LOCAL_KEY, String(n))
-    write(sessionStorage, LOCAL_SESSION, '1')
+    write(LOCAL_KEY, String(n))
+    markCounted(LOCAL_HIT_KEY)
   }
   return Math.max(n, 1)
 }
@@ -47,7 +61,6 @@ async function remoteCount(endpoint, hit) {
 }
 
 // Returns null while loading, then the number of visits.
-// A visit is counted once per browser tab session, so refreshing doesn't inflate it.
 export function useVisitCount() {
   const [count, setCount] = useState(null)
 
@@ -56,8 +69,8 @@ export function useVisitCount() {
     ;(async () => {
       let n = null
       if (visitCounter.endpoint) {
-        const hit = !read(sessionStorage, HIT_SESSION)
-        if (hit) write(sessionStorage, HIT_SESSION, '1')
+        const hit = dueForCount(HIT_KEY)
+        if (hit) markCounted(HIT_KEY)
         try {
           n = await remoteCount(visitCounter.endpoint, hit)
         } catch {
